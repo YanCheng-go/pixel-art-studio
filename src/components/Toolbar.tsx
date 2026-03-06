@@ -154,7 +154,7 @@ export function Toolbar({
           onClick={toggleTheme}
           title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
         >
-          {theme === 'dark' ? '☀ Light' : '☾ Dark'}
+          {theme === 'dark' ? '☀' : '☾'}
         </button>
         <button
           className="toolbar-btn"
