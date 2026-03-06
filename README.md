@@ -2,7 +2,7 @@
 
 A browser-based pixel art editor built with React + TypeScript + Vite. Dark terminal aesthetic with neon green accents.
 
-**Live:** [yancheng-pixel-art.vercel.app](https://yancheng-pixel-art.vercel.app)
+**Live:** [maverick-pixel-studio.vercel.app](https://maverick-pixel-studio.vercel.app)
 
 ## Features
 
