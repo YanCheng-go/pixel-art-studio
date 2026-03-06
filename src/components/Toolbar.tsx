@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import type { Tool } from '../types';
 import { PixelTitle } from './PixelTitle';
+import { FeedbackDialog } from './FeedbackDialog';
+import { AboutDialog } from './AboutDialog';
 
 interface ToolbarProps {
   activeTool: Tool;
@@ -49,11 +51,24 @@ export function Toolbar({
   onAiGenerate,
 }: ToolbarProps) {
   const [supportOpen, setSupportOpen] = useState(false);
+  const [feedbackOpen, setFeedbackOpen] = useState(false);
+  const [aboutOpen, setAboutOpen] = useState(false);
+  const [theme, setTheme] = useState(() => {
+    const stored = localStorage.getItem('pixel-art-theme');
+    return stored || 'dark';
+  });
+
+  const toggleTheme = () => {
+    const next = theme === 'dark' ? 'light' : 'dark';
+    setTheme(next);
+    document.documentElement.setAttribute('data-theme', next);
+    localStorage.setItem('pixel-art-theme', next);
+  };
 
   return (
     <div className="toolbar">
       <div className="toolbar-group toolbar-brand">
-        <PixelTitle text="PIXEL ART STUDIO" blockSize={3.5} />
+        <PixelTitle text="PIXEL ART STUDIO" blockSize={3} />
       </div>
 
       <div className="toolbar-group">
@@ -68,10 +83,10 @@ export function Toolbar({
         </button>
         <div className="toolbar-separator" />
         <button className="toolbar-btn" onClick={onExportPng} title="Export PNG">
-          PNG
+          &darr; PNG
         </button>
         <button className="toolbar-btn" onClick={onExportSpriteSheet} title="Export Sprite Sheet">
-          Sheet
+          &darr; Sheet
         </button>
       </div>
 
@@ -133,12 +148,43 @@ export function Toolbar({
 
       <div className="toolbar-spacer" />
 
-      <button
-        className="btn-support"
-        onClick={() => setSupportOpen(true)}
-      >
-        &#x2615; Support
-      </button>
+      <div className="toolbar-group toolbar-meta">
+        <button
+          className="toolbar-btn"
+          onClick={toggleTheme}
+          title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
+        >
+          {theme === 'dark' ? '☀' : '☾'}
+        </button>
+        <button
+          className="toolbar-btn"
+          onClick={() => setFeedbackOpen(true)}
+          title="Send Feedback"
+        >
+          Feedback
+        </button>
+        <button
+          className="toolbar-btn"
+          onClick={() => setAboutOpen(true)}
+          title="About & Help"
+        >
+          About
+        </button>
+        <button
+          className="btn-support"
+          onClick={() => setSupportOpen(true)}
+        >
+          &#x2615; Support
+        </button>
+      </div>
+
+      {feedbackOpen && (
+        <FeedbackDialog onClose={() => setFeedbackOpen(false)} />
+      )}
+
+      {aboutOpen && (
+        <AboutDialog onClose={() => setAboutOpen(false)} />
+      )}
 
       {supportOpen && (
         <div className="dialog-overlay" onClick={() => setSupportOpen(false)}>

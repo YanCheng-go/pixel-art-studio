@@ -1,73 +1,91 @@
-# React + TypeScript + Vite
+# Pixel Art Studio
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A browser-based pixel art editor built with React + TypeScript + Vite. Dark terminal aesthetic with neon green accents.
 
-Currently, two official plugins are available:
+**Live:** [pixel-art-studio.vercel.app](https://pixel-art-studio.vercel.app)
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Features
 
-## React Compiler
+- **Drawing Tools** - Pencil, eraser, flood fill, color picker
+- **Layers** - Multiple layers per frame with opacity and visibility controls
+- **Animation** - Timeline with multiple frames, preview playback, onion skinning
+- **Import** - Load any image with automatic pixelization and color quantization (drag & drop supported)
+- **AI Generate** - Generate pixel art using Google Gemini API (bring your own API key)
+- **Export** - PNG export, sprite sheet export (PNG + JSON metadata)
+- **Canvas** - Zoom, pan, grid overlay, X-axis symmetry mirror
+- **Palette** - Color picker with customizable palette, extracted colors from imports
+- **Undo/Redo** - Up to 100 history steps
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Getting Started
 
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm install
+npm run dev
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## Commands
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+| Command | Description |
+|---------|-------------|
+| `npm run dev` | Start Vite dev server |
+| `npm run build` | TypeScript check + production build |
+| `npm run lint` | ESLint |
+| `npm run preview` | Preview production build |
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+## Keyboard Shortcuts
+
+| Key | Action |
+|-----|--------|
+| B | Pencil tool |
+| E | Eraser tool |
+| G | Fill tool |
+| I | Color picker |
+| Ctrl+Z | Undo |
+| Ctrl+Y / Ctrl+Shift+Z | Redo |
+| Scroll wheel | Zoom |
+| Middle-click / Alt+click | Pan |
+
+## Architecture
+
+React 19 + TypeScript + Vite. No external state library — uses a custom `useProjectStore()` hook with `useState` + `useRef` for undo history.
+
+### Data Model
+
 ```
+ProjectState -> Frame[] -> Layer[] -> Color[][] (2D pixel grid)
+```
+
+### Key Files
+
+- `src/store.ts` - State management hook
+- `src/types.ts` - Data model types
+- `src/components/Canvas.tsx` - Main drawing canvas
+- `src/components/Toolbar.tsx` - Tool selection and actions
+- `src/export.ts` - PNG and sprite sheet export
+- `src/pixelize.ts` - Image-to-pixel-art conversion
+- `src/gemini.ts` - Gemini API integration
+
+## AI Integration
+
+The editor includes client-side AI pixel art generation using Google Gemini 2.0 Flash. Enter your own API key (stored in localStorage, never sent to any server) and a text prompt to generate pixel art.
+
+## MCP
+
+Pixel Art Studio currently runs entirely client-side with no backend. There is no MCP (Model Context Protocol) server at this time.
+
+A future MCP server could enable AI agents (Claude, Cursor, etc.) to programmatically create and edit pixel art, manage sprite sheets, and automate game asset pipelines. If you're interested, please [open an issue](https://github.com/YanCheng-go/pixel-art-studio/issues).
+
+## Deploy
+
+The project is deployed on Vercel as a static site. Push to `master` to auto-deploy.
+
+## Support
+
+If you find this project useful:
+
+- [Buy Me a Coffee](https://buymeacoffee.com/yancheng)
+- MobilePay: +45 5272 8520
+
+## License
+
+MIT

@@ -23,8 +23,9 @@ interface CanvasProps {
   onPushHistory: () => void;
 }
 
-const CHECKER_LIGHT = '#cccccc';
-const CHECKER_DARK = '#999999';
+function getCSSVar(name: string): string {
+  return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+}
 
 export function Canvas({
   width,
@@ -87,7 +88,7 @@ export function Canvas({
     ctx.scale(dpr, dpr);
 
     // Background
-    ctx.fillStyle = '#1e1e1e';
+    ctx.fillStyle = getCSSVar('--canvas-bg') || '#0a0a0a';
     ctx.fillRect(0, 0, displayWidth, displayHeight);
 
     const centerX = displayWidth / 2;
@@ -97,11 +98,14 @@ export function Canvas({
     const offsetX = centerX - gridWidth / 2 + panX;
     const offsetY = centerY - gridHeight / 2 + panY;
 
+    const checkerLight = getCSSVar('--checker-light') || '#cccccc';
+    const checkerDark = getCSSVar('--checker-dark') || '#999999';
+
     // Checkerboard background (transparency indicator)
     for (let y = 0; y < height; y++) {
       for (let x = 0; x < width; x++) {
         const isLight = (x + y) % 2 === 0;
-        ctx.fillStyle = isLight ? CHECKER_LIGHT : CHECKER_DARK;
+        ctx.fillStyle = isLight ? checkerLight : checkerDark;
         ctx.fillRect(offsetX + x * zoom, offsetY + y * zoom, zoom, zoom);
       }
     }
@@ -195,6 +199,7 @@ export function Canvas({
     height,
     frames,
     activeFrameIndex,
+    activeLayerIndex,
     zoom,
     panX,
     panY,

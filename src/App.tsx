@@ -16,6 +16,12 @@ import {
 } from './gemini';
 import './App.css';
 
+// Apply saved theme on load
+const savedTheme = localStorage.getItem('pixel-art-theme');
+if (savedTheme) {
+  document.documentElement.setAttribute('data-theme', savedTheme);
+}
+
 function App() {
   const store = useProjectStore();
   const { state } = store;
@@ -30,13 +36,17 @@ function App() {
     smoothing: false,
   });
   const [newSize, setNewSize] = useState({ w: 32, h: 32 });
+  const [newSizeLockRatio, setNewSizeLockRatio] = useState(false);
+  const [keepRatio, setKeepRatio] = useState(true);
+  const imageAspectRef = useRef(1);
   const [showAiDialog, setShowAiDialog] = useState(false);
   const [aiApiKey, setAiApiKey] = useState(getStoredApiKey);
   const [aiPrompt, setAiPrompt] = useState('');
   const [aiReferenceImage, setAiReferenceImage] = useState<string | null>(null);
   const [aiLoading, setAiLoading] = useState(false);
   const [aiError, setAiError] = useState<string | null>(null);
-  const [aiPixelizeSize, setAiPixelizeSize] = useState(32);
+  const [aiPixelizeWidth, setAiPixelizeWidth] = useState(32);
+  const [aiPixelizeHeight, setAiPixelizeHeight] = useState(32);
   const [aiColorCount, setAiColorCount] = useState(16);
   const aiFileInputRef = useRef<HTMLInputElement>(null);
 
@@ -71,16 +81,26 @@ function App() {
   const loadImageFile = useCallback((file: File) => {
     const img = new Image();
     img.onload = () => {
+      const w = img.naturalWidth || img.width;
+      const h = img.naturalHeight || img.height;
+      // Pre-downscale to avoid browser canvas size limits
+      const maxIntermediate = 2048;
+      let iw = w, ih = h;
+      if (w > maxIntermediate || h > maxIntermediate) {
+        const scale = maxIntermediate / Math.max(w, h);
+        iw = Math.round(w * scale);
+        ih = Math.round(h * scale);
+      }
       const canvas = document.createElement('canvas');
-      canvas.width = img.width;
-      canvas.height = img.height;
+      canvas.width = iw;
+      canvas.height = ih;
       const ctx = canvas.getContext('2d')!;
-      ctx.drawImage(img, 0, 0);
-      const imageData = ctx.getImageData(0, 0, img.width, img.height);
+      ctx.drawImage(img, 0, 0, iw, ih);
+      const imageData = ctx.getImageData(0, 0, iw, ih);
       setPendingImage(imageData);
 
-      const maxDim = 64;
-      const aspect = img.width / img.height;
+      const maxDim = 256;
+      const aspect = w / h;
       let tw: number, th: number;
       if (aspect >= 1) {
         tw = Math.min(maxDim, img.width);
@@ -89,14 +109,13 @@ function App() {
         th = Math.min(maxDim, img.height);
         tw = Math.round(th * aspect);
       }
-      tw = [16, 32, 48, 64].reduce((prev, curr) =>
-        Math.abs(curr - tw) < Math.abs(prev - tw) ? curr : prev
-      );
-      th = [16, 32, 48, 64].reduce((prev, curr) =>
-        Math.abs(curr - th) < Math.abs(prev - th) ? curr : prev
-      );
+      // Clamp to reasonable range
+      tw = Math.max(8, Math.min(256, tw));
+      th = Math.max(8, Math.min(256, th));
+      imageAspectRef.current = w / h;
 
       setPixelizeOptions((o) => ({ ...o, targetWidth: tw, targetHeight: th }));
+      setKeepRatio(true);
       setShowPixelizeDialog(true);
     };
     img.src = URL.createObjectURL(file);
@@ -198,12 +217,12 @@ function App() {
       );
       const imageData = await base64ToImageData(base64);
       const { pixels, palette } = pixelizeImageData(imageData, {
-        targetWidth: aiPixelizeSize,
-        targetHeight: aiPixelizeSize,
+        targetWidth: aiPixelizeWidth,
+        targetHeight: aiPixelizeHeight,
         colorCount: aiColorCount,
         smoothing: false,
       });
-      store.newProject(aiPixelizeSize, aiPixelizeSize);
+      store.newProject(aiPixelizeWidth, aiPixelizeHeight);
       store.setState((s) => {
         const newFrames = s.frames.map((f, fi) => {
           if (fi !== 0) return f;
@@ -225,7 +244,7 @@ function App() {
     } finally {
       setAiLoading(false);
     }
-  }, [aiApiKey, aiPrompt, aiReferenceImage, aiPixelizeSize, aiColorCount, store]);
+  }, [aiApiKey, aiPrompt, aiReferenceImage, aiPixelizeWidth, aiPixelizeHeight, aiColorCount, store]);
 
   const handleAiReferenceUpload = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -345,29 +364,49 @@ function App() {
             <h3>New Project</h3>
             <div className="dialog-row">
               <label>Width:</label>
-              <select
+              <input
+                type="number"
+                className="dialog-text-input"
                 value={newSize.w}
-                onChange={(e) =>
-                  setNewSize((s) => ({ ...s, w: Number(e.target.value) }))
-                }
-              >
-                {[8, 16, 32, 48, 64, 128].map((v) => (
-                  <option key={v} value={v}>{v}px</option>
-                ))}
-              </select>
+                min={1}
+                max={512}
+                onChange={(e) => {
+                  const w = Math.max(1, Math.min(512, Number(e.target.value) || 1));
+                  setNewSize((s) => ({
+                    ...s,
+                    w,
+                    ...(newSizeLockRatio ? { h: Math.max(1, Math.round(w * s.h / s.w)) } : {}),
+                  }));
+                }}
+              />
             </div>
             <div className="dialog-row">
               <label>Height:</label>
-              <select
+              <input
+                type="number"
+                className="dialog-text-input"
                 value={newSize.h}
-                onChange={(e) =>
-                  setNewSize((s) => ({ ...s, h: Number(e.target.value) }))
-                }
-              >
-                {[8, 16, 32, 48, 64, 128].map((v) => (
-                  <option key={v} value={v}>{v}px</option>
-                ))}
-              </select>
+                min={1}
+                max={512}
+                onChange={(e) => {
+                  const h = Math.max(1, Math.min(512, Number(e.target.value) || 1));
+                  setNewSize((s) => ({
+                    ...s,
+                    h,
+                    ...(newSizeLockRatio ? { w: Math.max(1, Math.round(h * s.w / s.h)) } : {}),
+                  }));
+                }}
+              />
+            </div>
+            <div className="dialog-row">
+              <label>
+                <input
+                  type="checkbox"
+                  checked={newSizeLockRatio}
+                  onChange={(e) => setNewSizeLockRatio(e.target.checked)}
+                />
+                Keep aspect ratio
+              </label>
             </div>
             <div className="dialog-actions">
               <button onClick={() => setShowNewDialog(false)}>Cancel</button>
@@ -441,15 +480,26 @@ function App() {
               />
             </div>
             <div className="dialog-row">
-              <label>Size:</label>
-              <select
-                value={aiPixelizeSize}
-                onChange={(e) => setAiPixelizeSize(Number(e.target.value))}
-              >
-                {[8, 16, 32, 48, 64, 128].map((v) => (
-                  <option key={v} value={v}>{v}x{v}px</option>
-                ))}
-              </select>
+              <label>Width:</label>
+              <input
+                type="number"
+                className="dialog-text-input"
+                value={aiPixelizeWidth}
+                min={1}
+                max={512}
+                onChange={(e) => setAiPixelizeWidth(Math.max(1, Math.min(512, Number(e.target.value) || 1)))}
+              />
+            </div>
+            <div className="dialog-row">
+              <label>Height:</label>
+              <input
+                type="number"
+                className="dialog-text-input"
+                value={aiPixelizeHeight}
+                min={1}
+                max={512}
+                onChange={(e) => setAiPixelizeHeight(Math.max(1, Math.min(512, Number(e.target.value) || 1)))}
+              />
             </div>
             <div className="dialog-row">
               <label>Colors:</label>
@@ -492,29 +542,49 @@ function App() {
             <p className="dialog-desc">Convert to pixel art or import raw (downscaled).</p>
             <div className="dialog-row">
               <label>Width:</label>
-              <select
+              <input
+                type="number"
+                className="dialog-text-input"
                 value={pixelizeOptions.targetWidth}
-                onChange={(e) =>
-                  setPixelizeOptions((o) => ({ ...o, targetWidth: Number(e.target.value) }))
-                }
-              >
-                {[8, 16, 32, 48, 64, 128].map((v) => (
-                  <option key={v} value={v}>{v}px</option>
-                ))}
-              </select>
+                min={1}
+                max={512}
+                onChange={(e) => {
+                  const w = Math.max(1, Math.min(512, Number(e.target.value) || 1));
+                  setPixelizeOptions((o) => ({
+                    ...o,
+                    targetWidth: w,
+                    ...(keepRatio ? { targetHeight: Math.max(1, Math.round(w / imageAspectRef.current)) } : {}),
+                  }));
+                }}
+              />
             </div>
             <div className="dialog-row">
               <label>Height:</label>
-              <select
+              <input
+                type="number"
+                className="dialog-text-input"
                 value={pixelizeOptions.targetHeight}
-                onChange={(e) =>
-                  setPixelizeOptions((o) => ({ ...o, targetHeight: Number(e.target.value) }))
-                }
-              >
-                {[8, 16, 32, 48, 64, 128].map((v) => (
-                  <option key={v} value={v}>{v}px</option>
-                ))}
-              </select>
+                min={1}
+                max={512}
+                onChange={(e) => {
+                  const h = Math.max(1, Math.min(512, Number(e.target.value) || 1));
+                  setPixelizeOptions((o) => ({
+                    ...o,
+                    targetHeight: h,
+                    ...(keepRatio ? { targetWidth: Math.max(1, Math.round(h * imageAspectRef.current)) } : {}),
+                  }));
+                }}
+              />
+            </div>
+            <div className="dialog-row">
+              <label>
+                <input
+                  type="checkbox"
+                  checked={keepRatio}
+                  onChange={(e) => setKeepRatio(e.target.checked)}
+                />
+                Keep aspect ratio
+              </label>
             </div>
             <div className="dialog-row">
               <label>Colors:</label>

@@ -426,11 +426,16 @@ export function useProjectStore() {
   const newProject = useCallback(
     (width: number, height: number) => {
       const frame = createFrame('frame-1', width, height);
+      // Auto-fit zoom so the canvas fits in ~512px viewport area
+      const fitZoom = Math.max(1, Math.min(64, Math.floor(512 / Math.max(width, height))));
       setState({
         ...createInitialState(),
         width,
         height,
         frames: [frame],
+        zoom: fitZoom,
+        panX: 0,
+        panY: 0,
       });
       historyRef.current = [];
       historyIndexRef.current = -1;
