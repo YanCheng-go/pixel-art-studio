@@ -69,11 +69,29 @@ ProjectState -> Frame[] -> Layer[] -> Color[][] (2D pixel grid)
 
 The editor includes client-side AI pixel art generation using Google Gemini 2.0 Flash. Enter your own API key (stored in localStorage, never sent to any server) and a text prompt to generate pixel art.
 
-## MCP
+## MCP Server
 
-Pixel Art Studio currently runs entirely client-side with no backend. There is no MCP (Model Context Protocol) server at this time.
+An MCP (Model Context Protocol) server is included in `mcp-server/`, enabling AI agents (Claude, Cursor, etc.) to programmatically create, edit, and export pixel art.
 
-A future MCP server could enable AI agents (Claude, Cursor, etc.) to programmatically create and edit pixel art, manage sprite sheets, and automate game asset pipelines. If you're interested, please [open an issue](https://github.com/YanCheng-go/pixel-art-studio/issues).
+```bash
+cd mcp-server
+npm install && npm run build
+```
+
+Add to your Claude Code config:
+
+```json
+{
+  "mcpServers": {
+    "pixel-art-studio": {
+      "command": "node",
+      "args": ["/path/to/pixel-art-studio/mcp-server/dist/index.js"]
+    }
+  }
+}
+```
+
+**22 tools available:** create projects, import/pixelize images, draw (pixel, line, rect, circle, fill), manage layers and animation frames, export PNG and sprite sheets. See [mcp-server/README.md](mcp-server/README.md) for full docs.
 
 ## Deploy
 

@@ -54,23 +54,26 @@ export function AboutDialog({ onClose }: AboutDialogProps) {
         </div>
 
         <div className="about-section">
-          <h4>MCP Integration</h4>
+          <h4>MCP Server</h4>
           <p className="about-text">
-            Pixel Art Studio does not currently include an MCP (Model Context Protocol) server.
-            The app runs entirely client-side in your browser &mdash; no backend is needed.
+            Pixel Art Studio includes an MCP (Model Context Protocol) server that lets AI agents
+            (Claude, Cursor, etc.) programmatically create, edit, and export pixel art.
           </p>
           <p className="about-text">
-            For AI-powered pixel art generation, we use the Gemini API directly from the browser
-            with your own API key. This means no server costs and your key stays on your device
-            (stored in localStorage).
+            <strong>22 tools:</strong> create projects, import/pixelize images, draw (pixel, line,
+            rect, circle, flood fill), manage layers and animation frames, export PNG and sprite sheets.
           </p>
           <p className="about-text">
-            A future MCP server could enable AI agents (e.g. Claude, Cursor) to programmatically
-            create and edit pixel art, manage sprite sheets, and automate asset pipelines. If you're
-            interested in this feature, please open an issue on{' '}
-            <a href={`${GITHUB_URL}/issues`} target="_blank" rel="noopener noreferrer">
-              GitHub
-            </a>.
+            Setup: <code>cd mcp-server &amp;&amp; npm install &amp;&amp; npm run build</code>
+            &mdash; then add to your Claude Code config. See{' '}
+            <a href={`${GITHUB_URL}/tree/master/mcp-server`} target="_blank" rel="noopener noreferrer">
+              mcp-server/README.md
+            </a>{' '}
+            for full docs.
+          </p>
+          <p className="about-text">
+            The web editor also supports client-side AI generation via Gemini API
+            (bring your own key, stored in localStorage).
           </p>
         </div>
 
