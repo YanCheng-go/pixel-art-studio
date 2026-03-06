@@ -213,6 +213,13 @@ export function Canvas({
   }, [draw]);
 
   useEffect(() => {
+    // Redraw when theme changes
+    const observer = new MutationObserver(() => draw());
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+    return () => observer.disconnect();
+  }, [draw]);
+
+  useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const observer = new ResizeObserver(() => draw());
