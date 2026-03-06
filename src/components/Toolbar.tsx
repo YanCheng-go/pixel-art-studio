@@ -201,11 +201,11 @@ export function Toolbar({
               <div className="support-divider">or</div>
               <a
                 className="support-link"
-                href="https://buymeacoffee.com/yancheng"
+                href="https://buymeacoffee.com/maverickmiaow"
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                buymeacoffee.com/yancheng &rarr;
+                buymeacoffee.com/maverickmiaow &rarr;
               </a>
             </div>
             <p className="support-thanks">Thank you for your support!</p>

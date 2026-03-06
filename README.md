@@ -83,7 +83,7 @@ The project is deployed on Vercel as a static site. Push to `master` to auto-dep
 
 If you find this project useful:
 
-- [Buy Me a Coffee](https://buymeacoffee.com/yancheng)
+- [Buy Me a Coffee](https://buymeacoffee.com/maverickmiaow)
 - MobilePay: +45 5272 8520
 
 ## License
