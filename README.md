@@ -2,7 +2,7 @@
 
 A browser-based pixel art editor built with React + TypeScript + Vite. Dark terminal aesthetic with neon green accents.
 
-**Live:** [pixel-art-studio.vercel.app](https://pixel-art-studio.vercel.app)
+**Live:** [yancheng-pixel-art.vercel.app](https://yancheng-pixel-art.vercel.app)
 
 ## Features
 
