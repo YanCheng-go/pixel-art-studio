@@ -1,4 +1,4 @@
-const VERSION = '1.0.0';
+const VERSION = '1.1.0';
 const GITHUB_URL = 'https://github.com/YanCheng-go/pixel-art-studio';
 
 interface AboutDialogProps {
