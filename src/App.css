@@ -190,6 +190,23 @@ body {
   gap: 6px;
 }
 
+.btn-theme-toggle {
+  font-size: 16px;
+  padding: 4px 8px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--bg-hover);
+  color: var(--text);
+  cursor: pointer;
+  transition: all 0.2s;
+  line-height: 1;
+}
+
+.btn-theme-toggle:hover {
+  border-color: var(--accent);
+  background: var(--accent-glow);
+}
+
 /* ─── About dialog ─── */
 .about-dialog {
   max-width: 520px;
@@ -365,6 +382,7 @@ body {
   flex: 1;
   position: relative;
   overflow: hidden;
+  background: var(--canvas-bg);
 }
 
 /* ─── Panels ─── */

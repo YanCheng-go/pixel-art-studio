@@ -150,11 +150,11 @@ export function Toolbar({
 
       <div className="toolbar-group toolbar-meta">
         <button
-          className="toolbar-btn"
+          className="btn-theme-toggle"
           onClick={toggleTheme}
           title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
         >
-          {theme === 'dark' ? '☀' : '☾'}
+          {theme === 'dark' ? '☀ Light' : '☾ Dark'}
         </button>
         <button
           className="toolbar-btn"
