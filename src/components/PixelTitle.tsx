@@ -1,3 +1,5 @@
+import React from 'react';
+
 // Each letter is a 5-tall grid of varying width. 1 = filled block, 0 = empty.
 const PIXEL_FONT: Record<string, number[][]> = {
   P: [
@@ -123,7 +125,7 @@ export function PixelTitle({
   const svgWidth = totalGridWidth * bs;
   const svgHeight = 5 * bs;
 
-  const blocks: JSX.Element[] = [];
+  const blocks: React.ReactElement[] = [];
   let offsetX = 0;
 
   for (const char of letters) {

@@ -1,4 +1,4 @@
-import { type Frame, type Color, colorToString } from './types';
+import { type Frame, colorToString } from './types';
 
 function renderFrameToCanvas(
   frame: Frame,

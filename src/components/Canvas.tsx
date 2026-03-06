@@ -1,5 +1,5 @@
 import { useRef, useEffect, useCallback, useState } from 'react';
-import { type Color, TRANSPARENT, colorToString, colorsEqual } from '../types';
+import { type Color, TRANSPARENT, colorToString } from '../types';
 
 interface CanvasProps {
   width: number;
@@ -23,7 +23,6 @@ interface CanvasProps {
   onPushHistory: () => void;
 }
 
-const CHECKER_SIZE = 8;
 const CHECKER_LIGHT = '#cccccc';
 const CHECKER_DARK = '#999999';
 

@@ -1,15 +1,12 @@
 import { useState, useCallback, useRef } from 'react';
 import {
   type ProjectState,
-  type Frame,
   type Color,
   type Tool,
   type HistoryEntry,
   createFrame,
   cloneFrame,
-  cloneLayer,
   createEmptyLayer,
-  TRANSPARENT,
   colorsEqual,
   cloneColor,
 } from './types';

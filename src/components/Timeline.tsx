@@ -1,5 +1,5 @@
 import type { Frame } from '../types';
-import { useRef, useEffect, useCallback } from 'react';
+import { useRef, useEffect } from 'react';
 
 interface TimelineProps {
   frames: Frame[];

@@ -11,8 +11,7 @@ interface PreviewProps {
 export function Preview({ frames, activeFrameIndex, width, height }: PreviewProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [playFrame, setPlayFrame] = useState(0);
-  const animRef = useRef<number>();
+  const animRef = useRef<number>(undefined);
 
   const renderFrame = useCallback(
     (canvas: HTMLCanvasElement, frameIndex: number) => {
@@ -20,7 +19,6 @@ export function Preview({ frames, activeFrameIndex, width, height }: PreviewProp
       const scale = Math.min(canvas.width / width, canvas.height / height);
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      // Checkerboard
       const cs = Math.max(2, Math.floor(scale / 2));
       for (let y = 0; y < canvas.height; y += cs) {
         for (let x = 0; x < canvas.width; x += cs) {
@@ -73,7 +71,6 @@ export function Preview({ frames, activeFrameIndex, width, height }: PreviewProp
       if (time - lastTime >= duration) {
         lastTime = time;
         currentFrame = (currentFrame + 1) % frames.length;
-        setPlayFrame(currentFrame);
         if (canvasRef.current) {
           renderFrame(canvasRef.current, currentFrame);
         }
