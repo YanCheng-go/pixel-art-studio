@@ -80,7 +80,9 @@ function App() {
   // Drag and drop
   const loadImageFile = useCallback((file: File) => {
     const img = new Image();
+    const url = URL.createObjectURL(file);
     img.onload = () => {
+      URL.revokeObjectURL(url);
       const w = img.naturalWidth || img.width;
       const h = img.naturalHeight || img.height;
       // Pre-downscale to avoid browser canvas size limits
@@ -118,7 +120,7 @@ function App() {
       setKeepRatio(true);
       setShowPixelizeDialog(true);
     };
-    img.src = URL.createObjectURL(file);
+    img.src = url;
   }, []);
 
   useEffect(() => {
@@ -199,13 +201,27 @@ function App() {
     setShowNewDialog(true);
   }, []);
 
+  const hasContent = useCallback(() => {
+    return state.frames.some((f) =>
+      f.layers.some((l) =>
+        l.pixels.some((row) => row.some((c) => c.a > 0))
+      )
+    );
+  }, [state.frames]);
+
   const handleCreateNew = useCallback(() => {
+    if (hasContent() && !window.confirm('Create a new project? Unsaved changes will be lost.')) {
+      return;
+    }
     store.newProject(newSize.w, newSize.h);
     setShowNewDialog(false);
-  }, [newSize, store]);
+  }, [newSize, store, hasContent]);
 
   const handleAiGenerate = useCallback(async () => {
     if (!aiApiKey.trim() || !aiPrompt.trim()) return;
+    if (hasContent() && !window.confirm('AI generation will replace the current project. Continue?')) {
+      return;
+    }
     storeApiKey(aiApiKey.trim());
     setAiLoading(true);
     setAiError(null);
@@ -244,7 +260,7 @@ function App() {
     } finally {
       setAiLoading(false);
     }
-  }, [aiApiKey, aiPrompt, aiReferenceImage, aiPixelizeWidth, aiPixelizeHeight, aiColorCount, store]);
+  }, [aiApiKey, aiPrompt, aiReferenceImage, aiPixelizeWidth, aiPixelizeHeight, aiColorCount, store, hasContent]);
 
   const handleAiReferenceUpload = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {

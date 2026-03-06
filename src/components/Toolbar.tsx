@@ -137,11 +137,11 @@ export function Toolbar({
       </div>
 
       <div className="toolbar-group">
-        <button className="toolbar-btn" onClick={() => onZoom(zoom - 2)} title="Zoom Out">
+        <button className="toolbar-btn" onClick={() => onZoom(zoom - Math.max(1, Math.floor(zoom / 4)))} title="Zoom Out">
           -
         </button>
         <span className="toolbar-label">{zoom}x</span>
-        <button className="toolbar-btn" onClick={() => onZoom(zoom + 2)} title="Zoom In">
+        <button className="toolbar-btn" onClick={() => onZoom(zoom + Math.max(1, Math.floor(zoom / 4)))} title="Zoom In">
           +
         </button>
       </div>

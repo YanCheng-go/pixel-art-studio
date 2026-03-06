@@ -22,8 +22,8 @@ export function LayersPanel({
       <div className="panel-header">
         Layers
         <div className="panel-actions">
-          <button onClick={onAddLayer} title="Add Layer">+</button>
-          <button onClick={onRemoveLayer} title="Remove Layer">-</button>
+          <button onClick={onAddLayer} title="Add Layer" aria-label="Add layer">+</button>
+          <button onClick={onRemoveLayer} title="Remove Layer" aria-label="Remove layer">-</button>
         </div>
       </div>
       <div className="layers-list">
@@ -41,8 +41,9 @@ export function LayersPanel({
                   e.stopPropagation();
                   onToggleVisibility(idx);
                 }}
+                aria-label={layer.visible ? 'Hide layer' : 'Show layer'}
               >
-                {layer.visible ? 'V' : 'H'}
+                {layer.visible ? '\u25C9' : '\u25CE'}
               </button>
               <span className="layer-name">{layer.name}</span>
               {layer.locked && <span className="layer-lock">L</span>}

@@ -813,3 +813,30 @@ body {
 ::-webkit-scrollbar-thumb:hover {
   background: #444;
 }
+
+/* ─── Responsive ─── */
+@media (max-width: 900px) {
+  .sidebar-left,
+  .sidebar-right {
+    width: 170px;
+  }
+
+  .toolbar-brand {
+    display: none;
+  }
+}
+
+@media (max-width: 640px) {
+  .sidebar-left,
+  .sidebar-right {
+    width: 140px;
+  }
+
+  .toolbar {
+    padding: 6px 8px;
+  }
+
+  .toolbar-group {
+    padding: 0 4px;
+  }
+}

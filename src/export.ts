@@ -104,8 +104,10 @@ export function exportSpriteSheet(
   });
   const jsonLink = document.createElement('a');
   jsonLink.download = `${filename}.json`;
-  jsonLink.href = URL.createObjectURL(jsonBlob);
+  const jsonUrl = URL.createObjectURL(jsonBlob);
+  jsonLink.href = jsonUrl;
   jsonLink.click();
+  URL.revokeObjectURL(jsonUrl);
 }
 
 export function exportGif(

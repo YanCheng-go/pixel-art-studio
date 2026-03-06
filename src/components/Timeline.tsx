@@ -97,9 +97,9 @@ export function Timeline({
       <div className="panel-header">
         Timeline
         <div className="panel-actions">
-          <button onClick={onAddFrame} title="New Frame">+</button>
-          <button onClick={onDuplicateFrame} title="Duplicate Frame">Dup</button>
-          <button onClick={onRemoveFrame} title="Remove Frame">-</button>
+          <button onClick={onAddFrame} title="New Frame" aria-label="Add frame">+</button>
+          <button onClick={onDuplicateFrame} title="Duplicate Frame" aria-label="Duplicate frame">Dup</button>
+          <button onClick={onRemoveFrame} title="Remove Frame" aria-label="Remove frame">-</button>
         </div>
       </div>
       <div className="timeline-frames">

@@ -53,8 +53,8 @@ function createInitialState(): ProjectState {
 
 export function useProjectStore() {
   const [state, setState] = useState<ProjectState>(createInitialState);
-  const historyRef = useRef<HistoryEntry[]>([]);
-  const historyIndexRef = useRef(-1);
+  const undoStackRef = useRef<HistoryEntry[]>([]);
+  const redoStackRef = useRef<HistoryEntry[]>([]);
 
   const pushHistory = useCallback(() => {
     setState((s) => {
@@ -63,36 +63,27 @@ export function useProjectStore() {
         activeFrameIndex: s.activeFrameIndex,
         activeLayerIndex: s.activeLayerIndex,
       };
-      const history = historyRef.current;
-      // Remove future entries if we're not at the end
-      historyRef.current = history.slice(0, historyIndexRef.current + 1);
-      historyRef.current.push(entry);
-      if (historyRef.current.length > 100) {
-        historyRef.current.shift();
-      } else {
-        historyIndexRef.current++;
+      undoStackRef.current.push(entry);
+      if (undoStackRef.current.length > 100) {
+        undoStackRef.current.shift();
       }
+      redoStackRef.current = [];
       return s;
     });
   }, []);
 
   const undo = useCallback(() => {
-    if (historyIndexRef.current < 0) return;
     setState((s) => {
-      const entry = historyRef.current[historyIndexRef.current];
-      if (!entry) return s;
-      // Save current state for redo
-      if (historyIndexRef.current === historyRef.current.length - 1) {
-        historyRef.current.push({
-          frames: s.frames.map(cloneFrame),
-          activeFrameIndex: s.activeFrameIndex,
-          activeLayerIndex: s.activeLayerIndex,
-        });
-      }
-      historyIndexRef.current--;
+      if (undoStackRef.current.length === 0) return s;
+      redoStackRef.current.push({
+        frames: s.frames.map(cloneFrame),
+        activeFrameIndex: s.activeFrameIndex,
+        activeLayerIndex: s.activeLayerIndex,
+      });
+      const entry = undoStackRef.current.pop()!;
       return {
         ...s,
-        frames: entry.frames.map(cloneFrame),
+        frames: entry.frames,
         activeFrameIndex: entry.activeFrameIndex,
         activeLayerIndex: entry.activeLayerIndex,
       };
@@ -100,14 +91,17 @@ export function useProjectStore() {
   }, []);
 
   const redo = useCallback(() => {
-    if (historyIndexRef.current >= historyRef.current.length - 2) return;
-    historyIndexRef.current += 2;
     setState((s) => {
-      const entry = historyRef.current[historyIndexRef.current];
-      if (!entry) return s;
+      if (redoStackRef.current.length === 0) return s;
+      undoStackRef.current.push({
+        frames: s.frames.map(cloneFrame),
+        activeFrameIndex: s.activeFrameIndex,
+        activeLayerIndex: s.activeLayerIndex,
+      });
+      const entry = redoStackRef.current.pop()!;
       return {
         ...s,
-        frames: entry.frames.map(cloneFrame),
+        frames: entry.frames,
         activeFrameIndex: entry.activeFrameIndex,
         activeLayerIndex: entry.activeLayerIndex,
       };
@@ -210,6 +204,12 @@ export function useProjectStore() {
           if (!colorsEqual(newPixels[y][x], targetColor)) continue;
           visited.add(key);
           newPixels[y][x] = cloneColor(fillColor);
+          if (s.symmetryX) {
+            const mirrorX = s.width - 1 - x;
+            if (mirrorX !== x && mirrorX >= 0 && mirrorX < s.width) {
+              newPixels[y][mirrorX] = cloneColor(fillColor);
+            }
+          }
           stack.push([x + 1, y], [x - 1, y], [x, y + 1], [x, y - 1]);
         }
 
@@ -437,8 +437,8 @@ export function useProjectStore() {
         panX: 0,
         panY: 0,
       });
-      historyRef.current = [];
-      historyIndexRef.current = -1;
+      undoStackRef.current = [];
+      redoStackRef.current = [];
     },
     []
   );

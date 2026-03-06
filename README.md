@@ -6,15 +6,16 @@ A browser-based pixel art editor built with React + TypeScript + Vite. Dark term
 
 ## Features
 
-- **Drawing Tools** - Pencil, eraser, flood fill, color picker
+- **Drawing Tools** - Pencil, eraser, flood fill, color picker with Bresenham line interpolation (no gaps in strokes)
 - **Layers** - Multiple layers per frame with opacity and visibility controls
 - **Animation** - Timeline with multiple frames, preview playback, onion skinning
 - **Import** - Load any image with automatic pixelization and color quantization (drag & drop supported)
 - **AI Generate** - Generate pixel art using Google Gemini API (bring your own API key)
 - **Export** - PNG export, sprite sheet export (PNG + JSON metadata)
-- **Canvas** - Zoom, pan, grid overlay, X-axis symmetry mirror
+- **Canvas** - Zoom, pan, grid overlay, X-axis symmetry mirror, pixel hover highlight
 - **Palette** - Color picker with customizable palette, extracted colors from imports
-- **Undo/Redo** - Up to 100 history steps
+- **Undo/Redo** - Dual-stack undo/redo up to 100 steps, only records actual modifications
+- **Responsive** - Adapts sidebar width for smaller screens
 
 ## Getting Started
 
@@ -47,7 +48,7 @@ npm run dev
 
 ## Architecture
 
-React 19 + TypeScript + Vite. No external state library — uses a custom `useProjectStore()` hook with `useState` + `useRef` for undo history.
+React 19 + TypeScript + Vite. No external state library — uses a custom `useProjectStore()` hook with `useState` + `useRef` for dual-stack undo/redo history. Canvas rendering uses offscreen ImageData compositing for performance (pixels rendered to a small buffer, then blitted scaled via `drawImage`).
 
 ### Data Model
 
