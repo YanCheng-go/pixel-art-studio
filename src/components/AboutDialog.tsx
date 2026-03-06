@@ -76,7 +76,7 @@ export function AboutDialog({ onClose }: AboutDialogProps) {
 
         <div className="about-section about-footer-info">
           <p className="about-text">
-            Built with React + TypeScript + Vite. Open source under MIT license.
+            Built with React + TypeScript + Vite. Licensed under CC BY 4.0.
           </p>
           <p className="about-text">
             <a href={GITHUB_URL} target="_blank" rel="noopener noreferrer">
