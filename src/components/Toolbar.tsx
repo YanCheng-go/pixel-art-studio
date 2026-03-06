@@ -1,4 +1,6 @@
+import { useState } from 'react';
 import type { Tool } from '../types';
+import { PixelTitle } from './PixelTitle';
 
 interface ToolbarProps {
   activeTool: Tool;
@@ -17,6 +19,7 @@ interface ToolbarProps {
   onExportPng: () => void;
   onExportSpriteSheet: () => void;
   onNewProject: () => void;
+  onAiGenerate: () => void;
 }
 
 const tools: { id: Tool; label: string; shortcut: string }[] = [
@@ -43,15 +46,25 @@ export function Toolbar({
   onExportPng,
   onExportSpriteSheet,
   onNewProject,
+  onAiGenerate,
 }: ToolbarProps) {
+  const [supportOpen, setSupportOpen] = useState(false);
+
   return (
     <div className="toolbar">
+      <div className="toolbar-group toolbar-brand">
+        <PixelTitle text="PIXEL ART STUDIO" blockSize={3.5} />
+      </div>
+
       <div className="toolbar-group">
         <button className="toolbar-btn" onClick={onNewProject} title="New Project">
           New
         </button>
         <button className="toolbar-btn" onClick={onLoadImage} title="Load Image">
           Load
+        </button>
+        <button className="toolbar-btn ai-btn" onClick={onAiGenerate} title="AI Generate (Gemini)">
+          AI
         </button>
         <div className="toolbar-separator" />
         <button className="toolbar-btn" onClick={onExportPng} title="Export PNG">
@@ -117,6 +130,45 @@ export function Toolbar({
           +
         </button>
       </div>
+
+      <div className="toolbar-spacer" />
+
+      <button
+        className="btn-support"
+        onClick={() => setSupportOpen(true)}
+      >
+        &#x2615; Support
+      </button>
+
+      {supportOpen && (
+        <div className="dialog-overlay" onClick={() => setSupportOpen(false)}>
+          <div className="dialog support-dialog" onClick={(e) => e.stopPropagation()}>
+            <h3>&#x2615; Buy a Coffee</h3>
+            <p className="dialog-desc">
+              Pixel Art Studio is free and open-source. If you find it useful, consider supporting the developer.
+            </p>
+            <div className="support-options">
+              <div className="support-option">
+                <span className="support-label">MobilePay</span>
+                <span className="support-value">+45 5272 8520</span>
+              </div>
+              <div className="support-divider">or</div>
+              <a
+                className="support-link"
+                href="https://buymeacoffee.com/yancheng"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                buymeacoffee.com/yancheng &rarr;
+              </a>
+            </div>
+            <p className="support-thanks">Thank you for your support!</p>
+            <div className="dialog-actions">
+              <button onClick={() => setSupportOpen(false)}>Close</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

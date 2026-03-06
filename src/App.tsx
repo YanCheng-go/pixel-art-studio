@@ -8,6 +8,12 @@ import { Timeline } from './components/Timeline';
 import { Preview } from './components/Preview';
 import { exportFrameAsPng, exportSpriteSheet } from './export';
 import { pixelizeImageData, type PixelizeOptions } from './pixelize';
+import {
+  generatePixelArt,
+  base64ToImageData,
+  getStoredApiKey,
+  storeApiKey,
+} from './gemini';
 import './App.css';
 
 function App() {
@@ -24,6 +30,15 @@ function App() {
     smoothing: false,
   });
   const [newSize, setNewSize] = useState({ w: 32, h: 32 });
+  const [showAiDialog, setShowAiDialog] = useState(false);
+  const [aiApiKey, setAiApiKey] = useState(getStoredApiKey);
+  const [aiPrompt, setAiPrompt] = useState('');
+  const [aiReferenceImage, setAiReferenceImage] = useState<string | null>(null);
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiError, setAiError] = useState<string | null>(null);
+  const [aiPixelizeSize, setAiPixelizeSize] = useState(32);
+  const [aiColorCount, setAiColorCount] = useState(16);
+  const aiFileInputRef = useRef<HTMLInputElement>(null);
 
   // Keyboard shortcuts
   useEffect(() => {
@@ -170,6 +185,63 @@ function App() {
     setShowNewDialog(false);
   }, [newSize, store]);
 
+  const handleAiGenerate = useCallback(async () => {
+    if (!aiApiKey.trim() || !aiPrompt.trim()) return;
+    storeApiKey(aiApiKey.trim());
+    setAiLoading(true);
+    setAiError(null);
+    try {
+      const base64 = await generatePixelArt(
+        aiApiKey.trim(),
+        aiPrompt.trim(),
+        aiReferenceImage ?? undefined
+      );
+      const imageData = await base64ToImageData(base64);
+      const { pixels, palette } = pixelizeImageData(imageData, {
+        targetWidth: aiPixelizeSize,
+        targetHeight: aiPixelizeSize,
+        colorCount: aiColorCount,
+        smoothing: false,
+      });
+      store.newProject(aiPixelizeSize, aiPixelizeSize);
+      store.setState((s) => {
+        const newFrames = s.frames.map((f, fi) => {
+          if (fi !== 0) return f;
+          return {
+            ...f,
+            layers: f.layers.map((l, li) => {
+              if (li !== 0) return l;
+              return { ...l, pixels, name: 'AI Generated' };
+            }),
+          };
+        });
+        return { ...s, frames: newFrames, palette };
+      });
+      setShowAiDialog(false);
+      setAiPrompt('');
+      setAiReferenceImage(null);
+    } catch (err) {
+      setAiError(err instanceof Error ? err.message : 'Generation failed');
+    } finally {
+      setAiLoading(false);
+    }
+  }, [aiApiKey, aiPrompt, aiReferenceImage, aiPixelizeSize, aiColorCount, store]);
+
+  const handleAiReferenceUpload = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        const result = reader.result as string;
+        setAiReferenceImage(result.split(',')[1]);
+      };
+      reader.readAsDataURL(file);
+      e.target.value = '';
+    },
+    []
+  );
+
   const activeFrame = state.frames[state.activeFrameIndex];
 
   return (
@@ -191,6 +263,7 @@ function App() {
         onExportPng={handleExportPng}
         onExportSpriteSheet={handleExportSpriteSheet}
         onNewProject={handleNewProject}
+        onAiGenerate={() => setShowAiDialog(true)}
       />
 
       <div className="main-area">
@@ -299,6 +372,111 @@ function App() {
             <div className="dialog-actions">
               <button onClick={() => setShowNewDialog(false)}>Cancel</button>
               <button className="primary" onClick={handleCreateNew}>Create</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showAiDialog && (
+        <div
+          className="dialog-overlay"
+          onClick={() => { if (!aiLoading) { setShowAiDialog(false); setAiError(null); } }}
+        >
+          <div className="dialog ai-dialog" onClick={(e) => e.stopPropagation()}>
+            <h3>AI Generate Pixel Art</h3>
+            <p className="dialog-desc">
+              Uses Google Gemini to generate an image, then pixelizes it for the editor.
+            </p>
+            <div className="dialog-row">
+              <label>API Key:</label>
+              <input
+                type="password"
+                className="dialog-text-input"
+                value={aiApiKey}
+                onChange={(e) => setAiApiKey(e.target.value)}
+                placeholder="Gemini API key"
+              />
+            </div>
+            <div className="dialog-row">
+              <label>Prompt:</label>
+              <textarea
+                className="dialog-textarea"
+                value={aiPrompt}
+                onChange={(e) => setAiPrompt(e.target.value)}
+                placeholder="e.g. a fantasy sword, a cute slime monster, a treasure chest..."
+                rows={3}
+              />
+            </div>
+            <div className="dialog-row">
+              <label>Reference:</label>
+              <div className="ai-reference-area">
+                <button
+                  className="toolbar-btn"
+                  onClick={() => aiFileInputRef.current?.click()}
+                >
+                  {aiReferenceImage ? 'Change' : 'Upload'}
+                </button>
+                {aiReferenceImage && (
+                  <>
+                    <img
+                      className="ai-reference-thumb"
+                      src={`data:image/png;base64,${aiReferenceImage}`}
+                      alt="Reference"
+                    />
+                    <button
+                      className="toolbar-btn"
+                      onClick={() => setAiReferenceImage(null)}
+                    >
+                      Remove
+                    </button>
+                  </>
+                )}
+              </div>
+              <input
+                ref={aiFileInputRef}
+                type="file"
+                accept="image/*"
+                style={{ display: 'none' }}
+                onChange={handleAiReferenceUpload}
+              />
+            </div>
+            <div className="dialog-row">
+              <label>Size:</label>
+              <select
+                value={aiPixelizeSize}
+                onChange={(e) => setAiPixelizeSize(Number(e.target.value))}
+              >
+                {[8, 16, 32, 48, 64, 128].map((v) => (
+                  <option key={v} value={v}>{v}x{v}px</option>
+                ))}
+              </select>
+            </div>
+            <div className="dialog-row">
+              <label>Colors:</label>
+              <select
+                value={aiColorCount}
+                onChange={(e) => setAiColorCount(Number(e.target.value))}
+              >
+                {[4, 8, 16, 32, 64].map((v) => (
+                  <option key={v} value={v}>{v}</option>
+                ))}
+              </select>
+            </div>
+            {aiError && <p className="ai-error">{aiError}</p>}
+            <div className="dialog-actions">
+              <button
+                onClick={() => { setShowAiDialog(false); setAiError(null); }}
+                disabled={aiLoading}
+              >
+                Cancel
+              </button>
+              <button
+                className="primary"
+                onClick={handleAiGenerate}
+                disabled={aiLoading || !aiApiKey.trim() || !aiPrompt.trim()}
+              >
+                {aiLoading ? 'Generating...' : 'Generate'}
+              </button>
             </div>
           </div>
         </div>
