@@ -303,7 +303,7 @@ export function getPalette(): Color[] {
 function medianCut(colors: Color[], targetCount: number): Color[] {
   if (colors.length <= targetCount) return colors;
 
-  let buckets: Color[][] = [colors];
+  const buckets: Color[][] = [colors];
 
   while (buckets.length < targetCount) {
     let maxRange = -1;
