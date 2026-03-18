@@ -1,6 +1,7 @@
 name: Deploy to GitHub Pages
 
 on:
+  pull_request:
   push:
     branches:
       - master
@@ -36,6 +37,7 @@ jobs:
           VITE_BASE_PATH: /pixel-art-studio/
 
       - name: Publish dist to gh-pages
+        if: github.event_name != 'pull_request'
         uses: peaceiris/actions-gh-pages@v4.0.0
         with:
           personal_token: ${{ secrets.PAGES_DEPLOY_TOKEN }}
