@@ -296,7 +296,6 @@ export function Canvas({
     height,
     frames,
     activeFrameIndex,
-    activeLayerIndex,
     zoom,
     panX,
     panY,
@@ -307,7 +306,10 @@ export function Canvas({
 
   // Store draw in a ref so event handlers always call the latest version
   const drawRef = useRef(draw);
-  drawRef.current = draw;
+
+  useEffect(() => {
+    drawRef.current = draw;
+  }, [draw]);
 
   const requestDraw = useCallback(() => {
     if (rafIdRef.current !== undefined) return;
