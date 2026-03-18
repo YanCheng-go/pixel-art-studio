@@ -19,7 +19,7 @@ function medianCut(colors: Color[], targetCount: number): Color[] {
   if (colors.length <= targetCount) return colors;
 
   type Bucket = Color[];
-  let buckets: Bucket[] = [colors];
+  const buckets: Bucket[] = [colors];
 
   while (buckets.length < targetCount) {
     // Find bucket with largest color range
