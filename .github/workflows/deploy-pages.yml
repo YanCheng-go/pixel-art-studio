@@ -12,7 +12,7 @@ concurrency:
   cancel-in-progress: true
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   deploy:
@@ -34,14 +34,12 @@ jobs:
       - name: Build production site
         run: npm run build
         env:
-          VITE_BASE_PATH: /pixel-art-studio/
+          VITE_BASE_PATH: /
 
-      - name: Publish dist to gh-pages
+      - name: Deploy to GitHub Pages
         if: github.event_name != 'pull_request'
-        uses: peaceiris/actions-gh-pages@v4.0.0
+        uses: peaceiris/actions-gh-pages@v4
         with:
-          personal_token: ${{ secrets.PAGES_DEPLOY_TOKEN }}
-          publish_branch: gh-pages
-          publish_dir: ./dist
-          force_orphan: true
-          full_commit_message: "deploy: publish GitHub Pages site"
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./build
+          keep_files: true
