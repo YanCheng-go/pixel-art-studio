@@ -96,7 +96,16 @@ Add to your Claude Code config:
 
 ## Deploy
 
-The project is deployed on Vercel as a static site. Push to `master` to auto-deploy.
+GitHub Pages deployment is handled by [`.github/workflows/deploy-pages.yml`](.github/workflows/deploy-pages.yml).
+
+Before the workflow can publish successfully:
+
+- Add a fine-grained personal access token as the repository secret `PAGES_DEPLOY_TOKEN`
+- Grant that token `Contents: Read and write` access to this repository
+- Let the first workflow run create/update the `gh-pages` branch
+- In GitHub repo settings, set Pages to deploy from the `gh-pages` branch at `/(root)`
+
+The workflow builds the app with `VITE_BASE_PATH=/pixel-art-studio/` so the generated assets resolve correctly from the repository Pages URL.
 
 ## Support
 
