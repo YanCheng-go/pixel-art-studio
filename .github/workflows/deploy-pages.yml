@@ -34,7 +34,7 @@ jobs:
       - name: Build production site
         run: npm run build
         env:
-          VITE_BASE_PATH: /
+          VITE_BASE_PATH: /pixel-art-studio/
 
       - name: Deploy to GitHub Pages
         if: github.event_name != 'pull_request'
